@@ -17,11 +17,16 @@ const clearInput = document.getElementById("clear");
 
 const resetAll = document.getElementById("reset");
 
+const plusOuMoin = document.getElementById("plusoumoins");
+
+// Here's the suppress of the default values of input and label
 inputValue.value = "";
 
-displayCalcul.innerText = ""
+displayCalcul.innerText = "";
 
-let preventAlotEqual = 0
+let preventAlotEqual = 0;
+
+let continueComputationIndex = 0;
 
 
 // These table store the signs 
@@ -30,10 +35,6 @@ const operators = [];
 keys.forEach(function(key){
     operators.push(document.getElementById(key));
 })
-
-
-let doubleDotTable = [];
-let otherListe = [];
 
 // These function help to clear the two list if necessary
 function reinitializeInput() {
@@ -50,44 +51,20 @@ function reinitializeAll() {
     }
 }
 
+// These list keep all values of the input
+let doubleDotTable = [];
+let otherListe = [];
 
-// These function help to suppress double dot and double 0
+// These function help to suppress a lot of dot and a lot of 0
 function removeDot(table) {
     let withoutDoubleDot = []
 
     table.forEach((item) => {
         switch (item) {
             case '0':
-                if (withoutDoubleDot.length >= 1){
-                    withoutDoubleDot.push("0")
+                if (withoutDoubleDot.length >= 1 || displayCalcul.innerText !== ""){
+                    withoutDoubleDot.push(item)
                 }
-                break;
-            case '1':
-                withoutDoubleDot.push("1")
-                break;
-            case '2':
-                withoutDoubleDot.push("2")
-                break;
-            case '3':
-                withoutDoubleDot.push("3")
-                break;
-            case '4':
-                withoutDoubleDot.push("4")
-                break;
-            case '5':
-                withoutDoubleDot.push("5")
-                break;
-            case '6':
-                withoutDoubleDot.push("6")
-                break;
-            case '7':
-                withoutDoubleDot.push("7")
-                break;
-            case '8':
-                withoutDoubleDot.push("8")
-                break;
-            case '9':
-                withoutDoubleDot.push("9")
                 break;
             case '.':
                 if (withoutDoubleDot.length >= 1 && !withoutDoubleDot.includes(".")){
@@ -98,7 +75,7 @@ function removeDot(table) {
                 }
                 break;
             default:
-                break;
+                withoutDoubleDot.push(item);
         }
     })
 
@@ -120,10 +97,29 @@ function clearAll(event) {
     displayCalcul.innerText = "";
 }
 
-// these function help to change the label text
+// These function help to computation
+function computation() {
+    let newLabel = displayCalcul.innerText;
+
+    let newLabelValue = newLabel.replace("×","*").replace("÷","/").replace("=","");
+
+    // displayCalcul.innerText = `${displayCalcul.innerText} ${inputValue.value} =`
+    
+    inputValue.value = `${eval(newLabelValue + inputValue.value)}`
+}
+
+// these function help to change the label text and help to continue computatation when the operato is clicked
 function changeLabelText(event, param) {
     event.preventDefault();
+
     if (displayCalcul.innerText !== "" || inputValue.value !== "") {
+
+        continueComputationIndex += 1
+        
+        if (continueComputationIndex > 1){
+            computation()
+        }
+
         displayCalcul.innerText = inputValue.value + " " + param.innerText
     }
     
@@ -150,51 +146,37 @@ function displayInputValue(event) {
     event.addEventListener("click", changeInputValue); 
 }
 
-// this functions help to do computations
 
-function computation(event) {
+// this functions help to do to give the result when equal is clicked
+function give_result(event) {
     event.preventDefault(); 
 
-    let newLabel = displayCalcul.innerText
+    preventAlotEqual +=1;
 
+    continuComputationIndex = 0;
 
-    let calculator = Number(newLabel.replace(" ", "").replace("+","").replace("-","").replace("×","").replace("÷",""));
-    let newInput = Number(inputValue.value)
-
-
-    preventAlotEqual +=1
     if (preventAlotEqual > 1){
         return
     }
 
-    if (newLabel.includes("+")){
-
-        displayCalcul.innerText = `${displayCalcul.innerText} ${inputValue.value} =`
-        inputValue.value = `${calculator + newInput}`
-
-    }else if(newLabel.includes("-")){
-
-        displayCalcul.innerText = `${displayCalcul.innerText} ${inputValue.value} =`
-        inputValue.value = `${calculator - newInput}`
-
-    }else if (newLabel.includes("×")){
-
-        displayCalcul.innerText = `${displayCalcul.innerText} ${inputValue.value} =`
-        inputValue.value = `${calculator * newInput}`
-
-    }else if (newLabel.includes("÷")){
-
-        displayCalcul.innerText = `${displayCalcul.innerText} ${inputValue.value} =`
-        inputValue.value = `${calculator / newInput}`
-    }
-    
+    displayCalcul.innerText = `${displayCalcul.innerText} ${inputValue.value} =`
+    inputValue.value = ""
+    computation()
 }
 
+// These function help to transform the result in percent
 function transformInPercent(event) {
     event.preventDefault();
     inputValue.value = Number(inputValue.value) / 100
 }
 
+// These function help to add + or -
+function plus_moin() {
+    inputValue.value = `${inputValue.value* (-1)}`
+}
+
+
+plusOuMoin.addEventListener("click",plus_moin)
 
 values.forEach((value) => displayInputValue(value));
 
@@ -204,7 +186,7 @@ operators.forEach((operator) => operator.addEventListener("click", () => {
 }))
 
 
-equalSign.addEventListener("click",computation);
+equalSign.addEventListener("click",give_result);
 
 tansformInPercent.addEventListener("click",transformInPercent);
 
